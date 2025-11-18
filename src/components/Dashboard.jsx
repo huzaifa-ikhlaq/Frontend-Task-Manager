@@ -1,15 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Dashboard() {
     const [boards, setBoards] = useState([]);
     const [newBoard, setNewBoard] = useState('');
 
+    const location = useLocation();
+    const userName = location.state?.userName || "User";
+
+
+    // token 
+    const token = localStorage.getItem("token");
+
     const navigate = useNavigate();
     const API_URL = `${import.meta.env.VITE_API_URL}/boards`;
 
     useEffect(() => {
-        fetch(API_URL)
+        fetch(API_URL, { headers: { Authorization: `Bearer ${token}` } })
             .then((res) => res.json())
             .then((data) => {
                 if (Array.isArray(data)) setBoards(data);
@@ -25,7 +32,10 @@ export default function Dashboard() {
         try {
             const res = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify({ name: newBoard }),
             });
             const savedBoard = await res.json();
@@ -38,7 +48,7 @@ export default function Dashboard() {
 
     async function deleteBoard(id) {
         try {
-            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
             setBoards(boards.filter((b) => b._id !== id));
         } catch (err) {
             console.error("Failed to delete board:", err);
@@ -50,10 +60,16 @@ export default function Dashboard() {
         navigate(`/board/${boardId}`, { state: { boardName: board.name } });
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        navigate("/login");
+    };
+
+
     return (
         <>
             <h1 className="bg-black text-white w-full text-3xl font-bold text-center rounded-b-4xl py-3 sticky top-0 z-10">
-                Dashboard
+                Welcome, {userName} to Dashboard
             </h1>
 
             <div className="bg-gray-300 min-h-screen w-full px-4 sm:px-6 lg:px-12 py-6 flex justify-center">
@@ -99,6 +115,9 @@ export default function Dashboard() {
                         </div>
                     )}
                 </div>
+            </div>
+            <div className="flex justify-between items-center  absolute bottom-5 right-5 ">
+                <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition  cursor-pointer"> <span className='transition-all rotate-10'>➜]</span> Logout</button>
             </div>
         </>
     );

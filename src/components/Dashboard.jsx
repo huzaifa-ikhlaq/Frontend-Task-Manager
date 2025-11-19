@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
     const [boards, setBoards] = useState([]);
     const [newBoard, setNewBoard] = useState('');
 
-    const location = useLocation();
-    const userName = location.state?.userName || "User";
+    const userName = localStorage.getItem("userName") || "User";
 
 
     // token 
@@ -116,7 +115,7 @@ export default function Dashboard() {
                     )}
                 </div>
             </div>
-            <div className="flex justify-between items-center  absolute bottom-5 right-5 ">
+            <div className="flex justify-between items-center  fixed bottom-5 right-5 ">
                 <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition  cursor-pointer"> <span className='transition-all rotate-10'>➜]</span> Logout</button>
             </div>
         </>
